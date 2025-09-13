@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Register - Face Attendance</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    video, canvas { border-radius:8px; border:2px solid #e3e3e3;}
+    .img-thumbnail {margin:3px;}
+  </style>
+</head>
+<body class="bg-light">
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container">
+      <a href="/" class="navbar-brand fs-4">Face Attendance</a>
+      <div class="collapse navbar-collapse">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a href="/login" class="nav-link">Login</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+  <div class="container mt-5 mb-5 shadow p-4 bg-white rounded">
+    <h1 class="mb-4">Register Account</h1>
+    {% if error %}
+      <div class="alert alert-danger">{{ error }}</div>
+    {% endif %}
+    <form id="registerForm" method="POST" action="{{ url_for('register_cam') }}">
+      <div class="mb-3">
+        <label>Email (use @gmail.com only!)</label>
+        <input type="email" class="form-control" name="email" pattern=".+@gmail\.com" required />
+      </div>
+      <div class="mb-3">
+        <label>Username</label>
+        <input type="text" class="form-control" name="username" required />
+      </div>
+      <div class="mb-3">
+        <label>Password</label>
+        <input type="password" class="form-control" name="password" required />
+      </div>
+      <div class="mb-4">
+        <label>Capture multiple Face Images</label><br />
+        <video id="video" width="320" height="240" autoplay></video><br />
+        <button type="button" id="snap" class="btn btn-success mt-2">Capture Photo</button>
+        <button type="button" id="clear" class="btn btn-danger mt-2 ms-2">Clear Photos</button>
+        <div id="photo-list" class="mt-2"></div>
+        <input type="hidden" name="face_images" id="face_images" required />
+      </div>
+      <button type="submit" class="btn btn-primary">Register</button>
+      <a href="/login/google" class="btn btn-outline-danger ms-3">Register with Google</a>
+    </form>
+  </div>
+<script>
+const video = document.getElementById('video');
+const snap = document.getElementById('snap');
+const clear = document.getElementById('clear');
+const photoList = document.getElementById('photo-list');
+const faceImagesInput = document.getElementById('face_images');
+
+navigator.mediaDevices.getUserMedia({ video: true })
+.then(stream => { video.srcObject = stream; })
+.catch(console.error);
+
+let capturedPhotos = [];
+
+snap.addEventListener('click', () => {
+  const canvas = document.createElement('canvas');
+  canvas.width = 320;
+  canvas.height = 240;
+  const context = canvas.getContext('2d');
+  context.drawImage(video, 0, 0, canvas.width, canvas.height);
+  const dataURL = canvas.toDataURL('image/png');
+  capturedPhotos.push(dataURL);
+  updatePhotoList();
+});
+
+clear.addEventListener('click', () => {
+  capturedPhotos = [];
+  updatePhotoList();
+});
+
+function updatePhotoList() {
+  photoList.innerHTML = '';
+  capturedPhotos.forEach(photo => {
+    const img = document.createElement('img');
+    img.src = photo;
+    img.width = 80;
+    img.classList.add('img-thumbnail');
+    photoList.appendChild(img);
+  });
+  faceImagesInput.value = JSON.stringify(capturedPhotos);
+}
+</script>
+</body>
+</html>

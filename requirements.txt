@@ -1,0 +1,10 @@
+flask
+flask-cors
+pymongo
+opencv-contrib-python
+numpy
+pillow
+python-dotenv
+werkzeug
+requests
+authlib
